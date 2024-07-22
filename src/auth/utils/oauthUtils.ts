@@ -5,7 +5,7 @@ export function oauthClientId(): string {
 }
 
 export function oauthClientSecret(): string {
-    return import.meta.env.env.VITE_OAUTH_CLIENT_SECRET;
+    return import.meta.env.VITE_OAUTH_CLIENT_SECRET;
 }
 
 /**
