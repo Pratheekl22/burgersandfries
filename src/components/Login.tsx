@@ -1,6 +1,4 @@
-import {beginAuthWorkflow } from "../utils/auth/authService";
-
-
+import { beginAuthWorkflow } from "../auth/services/authService.ts";
 
 const Login = () => {
 

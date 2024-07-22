@@ -1,20 +1,23 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getAuthorizationCode } from '../utils/auth/authService';
+import {setUserTokensFromAccessCode} from "../auth/services/tokenService.ts";
+import {getAuthorizationCode} from "../auth/services/authService.ts";
 
 const OAuthCallback = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const code = getAuthorizationCode(window.location.href);
-        console.log(code);
-        if (code) {
-            navigate('/profile');
-        } else {
-            // Handle the case when the code is not present in the URL
-            console.error('No code parameter found in the URL');
-            navigate('/login');
-        }
+        const handleOAuthCallback = async () => {
+            const code = getAuthorizationCode(window.location.href);
+            if (code) {
+                await setUserTokensFromAccessCode(code);
+                navigate('/inventory');
+            } else {
+                navigate('/login');
+            }
+        };
+
+        handleOAuthCallback();
     }, [navigate]);
 
     return <div>Loading...</div>;
