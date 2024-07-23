@@ -15,12 +15,12 @@ export async function setUserTokensFromAccessCode(code: string)  {
         }
     });
 
-    console.log(response.json().toString())
     if (response.ok) {
         const userToken = handleAccessTokenResponse(await(response.json()) as OAuthTokenResponse);
         setToken(userToken);
+        console.log('Successfully set user token')
     } else {
-        throw await Error(response.statusText);
+        throw Error(response.statusText);
     }
 }
 
