@@ -7,10 +7,8 @@ import {
     setToken
 } from "../utils/tokenUtils.ts";
 import {OAuthTokenResponse} from "../types/OAuthTokenResponse.ts";
-import {useLocation} from "react-router-dom";
-import {REDIRECT_URL_KEY} from "../constants/constants.ts";
-import {beginAuthWorkflow} from "./authService.ts";
 import {setUserTokensFromAccessCode, setUserTokensFromRefreshToken} from "./bungie/api/authenticationAPIs.ts";
+import {needReauthentication} from "../utils/oauthUtils.ts";
 
 /**
  * Sets the user tokens from the access code in the callback URL
@@ -43,19 +41,19 @@ export async function refreshUserTokens() {
 
 }
 
+/**
+ * Function to get the user's access token value
+ * If we return null, reauthenticate user
+ */
 export function getAccessTokenValue(): string | null {
     const userToken = getToken();
-    if(userToken && hasValidAccessToken(userToken)) {
+    if(userToken !== null && hasValidAccessToken(userToken)) {
+        return userToken.accessToken.value;
+    } else if(userToken !== null && !needReauthentication(userToken)) {
+        refreshUserTokens().then();
         return userToken.accessToken.value;
     } else {
-        // Store the current URL in localStorage or sessionStorage
-        const location = useLocation();
-        const currentUrl = `${location.pathname}${location.search}`;
-        localStorage.setItem(REDIRECT_URL_KEY, currentUrl);
-
-        // Do auth authorization flow
-        beginAuthWorkflow();
-        return null;
+        return null
     }
 }
 

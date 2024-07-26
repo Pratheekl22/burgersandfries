@@ -1,7 +1,7 @@
 import { nanoid } from 'nanoid'
-import {getToken, hasValidRefreshToken} from "../utils/tokenUtils.ts";
+import {getToken} from "../utils/tokenUtils.ts";
 import {getAuthorizationURL} from "./bungie/authorization/authorizationEndpoints.ts";
-import {getAuthorizationCode} from "../utils/oauthUtils.ts";
+import {getAuthorizationCode, needReauthentication} from "../utils/oauthUtils.ts";
 import {refreshUserTokens, setUserTokens} from "./tokenService.ts";
 
 const OAUTH_STATE_STRING = 'oauthState';
@@ -13,11 +13,11 @@ const OAUTH_STATE_STRING = 'oauthState';
 export const beginAuthWorkflow = () => {
     const userToken = getToken();
 
-    if(userToken === null || !hasValidRefreshToken(userToken)) {
+    if(needReauthentication(userToken)) {
         const state = nanoid();
         sessionStorage.setItem(OAUTH_STATE_STRING, state);
         window.location.href = getAuthorizationURL(state);
-    } else if(hasValidRefreshToken(userToken)) {
+    } else if(!needReauthentication(userToken)) {
         refreshUserTokens();
     }
 }
