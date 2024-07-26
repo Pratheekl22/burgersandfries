@@ -1,4 +1,4 @@
-import {OAUTH_STATE_STRING} from "../constants/constants.ts";
+import {OAUTH_STATE_STRING, REDIRECT_URL_KEY} from "../constants/constants.ts";
 
 /**
  * Return the authorization code if code is present and the saved state and url param state match
@@ -19,4 +19,8 @@ export const getAuthorizationCode = (callbackUrl: string) =>  {
 
 export const verifyAuthorizationCode = (state: string | null) => {
     return state === sessionStorage.getItem(OAUTH_STATE_STRING)
+}
+
+export const getRedirectURL = (): string => {
+    return localStorage.getItem(REDIRECT_URL_KEY) ?? "/dashboard"
 }

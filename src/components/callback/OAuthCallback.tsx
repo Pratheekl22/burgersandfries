@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { handleOAuthCallback } from "../../auth/services/authService";
+import {getRedirectURL} from "../../auth/utils/oauthUtils.ts";
 
 const OAuthCallback = () => {
     const navigate = useNavigate();
@@ -8,8 +9,8 @@ const OAuthCallback = () => {
     useEffect(() => {
         const handleRedirect = async () => {
             try {
-                const redirectUrl = await handleOAuthCallback();
-                navigate(redirectUrl);
+                await handleOAuthCallback();
+                navigate(getRedirectURL());
             } catch (error) {
                 console.error('Error handling OAuth callback:', error);
                 navigate('/login'); // Redirect to the login page in case of an error
