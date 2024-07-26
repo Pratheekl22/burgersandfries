@@ -1,54 +1,22 @@
-import {Token} from "../types/Token.ts";
-import {getToken} from "./tokenUtils.ts";
-
-const ACCESS_TOKEN_GRANT_TYPE = 'authorization_code';
-const REFRESH_TOKEN_GRANT_TYPE = 'refresh_token';
-
-export function oauthClientId(): string {
-    return import.meta.env.VITE_OAUTH_CLIENT_ID;
-}
-
-export function oauthClientSecret(): string {
-    return import.meta.env.VITE_OAUTH_CLIENT_SECRET;
-}
+import {OAUTH_STATE_STRING} from "../constants/constants.ts";
 
 /**
- * Build body to make code -> access token POST request
- * @param code
+ * Return the authorization code if code is present and the saved state and url param state match
+ * Else return null
+ * @param callbackUrl
  */
-export function buildAccessTokenBody(code: string): URLSearchParams {
-    return new URLSearchParams({
-        grant_type: ACCESS_TOKEN_GRANT_TYPE,
-        code,
-        client_id: oauthClientId(),
-        client_secret: oauthClientSecret(),
-    })
-}
+export const getAuthorizationCode = (callbackUrl: string) =>  {
+    const url = new URL(callbackUrl);
+    const code = url.searchParams.get('code');
+    const state = url.searchParams.get('state');
 
-export function buildRefreshTokenBody(refreshToken: Token): URLSearchParams {
-    return new URLSearchParams({
-        grant_type: REFRESH_TOKEN_GRANT_TYPE,
-        refresh_token: refreshToken.value,
-        client_id: oauthClientId(),
-        client_secret: oauthClientSecret(),
-    })
-}
-
-export function hasValidAccessToken(): boolean {
-    const userToken = getToken();
-    if(userToken && userToken.accessToken) {
-        return Date.now() < (userToken.accessToken.inception + userToken.accessToken.expires * 1000)
-    } else {
-        return false;
+    if (code && verifyAuthorizationCode(state)) {
+        return code;
     }
+
+    return null;
 }
 
-export function hasValidRefreshToken(): boolean {
-    const userToken = getToken();
-    if(userToken && userToken.refreshToken) {
-        return Date.now() < (userToken.refreshToken.inception + userToken.refreshToken.expires * 1000)
-    } else {
-        return false;
-    }
+export const verifyAuthorizationCode = (state: string | null) => {
+    return state === sessionStorage.getItem(OAUTH_STATE_STRING)
 }
-

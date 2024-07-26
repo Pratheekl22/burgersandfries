@@ -1,53 +1,51 @@
-import {hasValidAccessToken, hasValidRefreshToken, oauthClientId} from '../utils/oauthUtils.ts';
 import { nanoid } from 'nanoid'
 import { useNavigate } from 'react-router-dom';
+import {getToken, hasValidRefreshToken} from "../utils/tokenUtils.ts";
+import {getAuthorizationURL} from "./bungie/authorization/authorizationEndpoints.ts";
+import {REDIRECT_URL_KEY} from "../constants/constants.ts";
+import {getAuthorizationCode} from "../utils/oauthUtils.ts";
+import {refreshUserTokens, setUserTokens} from "./tokenService.ts";
 
 const OAUTH_STATE_STRING = 'oauthState';
 
+/**
+ * Workflow if the user goes through the base login page
+ * Default navigates them to the dashboard
+ */
 export const beginAuthWorkflow = () => {
     const navigate = useNavigate();
+    const userToken = getToken();
 
-    //If we don't have valid user tokens, send user through refresh workflow again
-    if(!hasValidAccessToken() || !hasValidRefreshToken()) {
+    if(userToken === null || !hasValidRefreshToken(userToken)) {
         const state = nanoid();
         sessionStorage.setItem(OAUTH_STATE_STRING, state);
         window.location.href = getAuthorizationURL(state);
+    } else if(hasValidRefreshToken(userToken)) {
+        const redirectUrl = localStorage.getItem(REDIRECT_URL_KEY);
+        if(redirectUrl) {
+            refreshUserTokens().then(() => navigate(redirectUrl));
+        } else {
+            refreshUserTokens().then(() => navigate('/dsahboard'));
+        }
+    }
+}
+
+export const handleOAuthCallback = async () => {
+    const code = getAuthorizationCode(window.location.href);
+    if (code) {
+        await setUserTokens(code);
+        //If the user was redirected from a URL, send them back to the URL after auth
+        const redirectUrl = localStorage.getItem(REDIRECT_URL_KEY);
+        if(redirectUrl) {
+            return redirectUrl;
+        } else {
+            return '/dashboard';
+        }
     } else {
-        navigate('/inventory')
+        throw Error("Failed to handle OAuth Callback")
     }
-}
+};
 
-/**
- * Returns the URL that bungie supports for OAuth authorization
- * On successful authorization, the user will be sent back to /callback with a code
- * @param state
- */
-export const getAuthorizationURL = (state: string) => {
-    const queryParams = new URLSearchParams({
-        client_id: oauthClientId(),
-        response_type: 'code',
-        state: state,
-    });
-    return `https://www.bungie.net/en/OAuth/Authorize?${queryParams.toString()}`;
-}
 
-/**
- * Return the authorization code if code is present and the saved state and url param state match
- * Else return null
- * @param callbackUrl
- */
-export const getAuthorizationCode = (callbackUrl: string) =>  {
-    const url = new URL(callbackUrl);
-    const code = url.searchParams.get('code');
-    const state = url.searchParams.get('state');
 
-    if (code && verifyAuthorizationCode(state)) {
-        return code;
-    }
 
-    return null;
-}
-
-export const verifyAuthorizationCode = (state: string | null) => {
-    return state === sessionStorage.getItem(OAUTH_STATE_STRING)
-}

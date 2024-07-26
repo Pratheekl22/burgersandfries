@@ -1,8 +1,9 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Home from './components/home/Home';
 import Login from './components/login/Login';
-import OAuthCallback from './components/OAuthCallback';
-import ProtectedRoute from "./components/ProtectedRoute.tsx";
+import OAuthCallback from './components/callback/OAuthCallback';
+import ProtectedRoute from "./components/routes/ProtectedRoute.tsx";
+import Search from './components/search/Search';
 
 const App = () => {
     return (
@@ -12,15 +13,23 @@ const App = () => {
                 <Route path="/login" element={<Login />} />
                 <Route path="/callback" element={<OAuthCallback />} />
                 <Route
-                    path="/burgies"
+                    path="/inventory"
                     element={
                         <ProtectedRoute>
-                            <div>you're finally awake</div>
+                            <div>This page is under construction...</div>
                         </ProtectedRoute>
                     }
                 />
                 <Route
-                    path="/fries"
+                    path="/search"
+                    element={
+                        <ProtectedRoute>
+                            {<Search/>}
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/dashboard"
                     element={
                         <ProtectedRoute>
                             <div>you're eeping</div>

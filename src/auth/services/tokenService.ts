@@ -1,19 +1,23 @@
 import {UserTokens} from "../types/UserTokens.ts";
-import {createAuthTokenFromResponse, createRefreshTokenFromResponse, getToken, setToken} from "../utils/tokenUtils.ts";
-import {buildAccessTokenBody, buildRefreshTokenBody} from "../utils/oauthUtils.ts";
+import {
+    createAuthTokenFromResponse,
+    createRefreshTokenFromResponse,
+    getToken,
+    hasValidAccessToken,
+    setToken
+} from "../utils/tokenUtils.ts";
 import {OAuthTokenResponse} from "../types/OAuthTokenResponse.ts";
+import {useLocation} from "react-router-dom";
+import {REDIRECT_URL_KEY} from "../constants/constants.ts";
+import {beginAuthWorkflow} from "./authService.ts";
+import {setUserTokensFromAccessCode, setUserTokensFromRefreshToken} from "./bungie/api/authenticationAPIs.ts";
 
-const TOKEN_URL = 'https://www.bungie.net/platform/app/oauth/token'
-
-export async function setUserTokensFromAccessCode(code: string)  {
-    const body = buildAccessTokenBody(code);
-    const response = await fetch(TOKEN_URL, {
-        method: 'POST',
-        body,
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        }
-    });
+/**
+ * Sets the user tokens from the access code in the callback URL
+ * @param code
+ */
+export async function setUserTokens(code: string)  {
+    const response = await setUserTokensFromAccessCode(code);
 
     if (response.ok) {
         const userToken = handleAccessTokenResponse(await(response.json()) as OAuthTokenResponse);
@@ -24,28 +28,41 @@ export async function setUserTokensFromAccessCode(code: string)  {
     }
 }
 
-export async function setUserTokensFromRefreshToken(userToken: UserTokens) {
-    const body = buildRefreshTokenBody(userToken.refreshToken);
-    const response = await fetch(TOKEN_URL, {
-        method: 'POST',
-        body,
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        }
-    });
+export async function refreshUserTokens() {
+    const userToken = getToken();
 
-    if (response.ok) {
-        handleRefreshTokenResponse(await(response.json()) as OAuthTokenResponse);
-        console.log('Successfully set new user access token')
+    if(userToken !== null) {
+        const response = await setUserTokensFromRefreshToken(userToken)
+        if (response.ok) {
+            handleRefreshTokenResponse(await(response.json()) as OAuthTokenResponse);
+            console.log('Successfully refreshed user access token')
+        } else {
+            throw Error(response.statusText);
+        }
+    }
+
+}
+
+export function getAccessTokenValue(): string | null {
+    const userToken = getToken();
+    if(userToken && hasValidAccessToken(userToken)) {
+        return userToken.accessToken.value;
     } else {
-        throw Error(response.statusText);
+        // Store the current URL in localStorage or sessionStorage
+        const location = useLocation();
+        const currentUrl = `${location.pathname}${location.search}`;
+        localStorage.setItem(REDIRECT_URL_KEY, currentUrl);
+
+        // Do auth authorization flow
+        beginAuthWorkflow();
+        return null;
     }
 }
 
 function handleAccessTokenResponse(response: OAuthTokenResponse): UserTokens {
     const inception = Date.now();
     const accessToken=  createAuthTokenFromResponse(response, inception);
-    let refreshToken = createRefreshTokenFromResponse(response, inception);
+    const refreshToken = createRefreshTokenFromResponse(response, inception);
 
     return {
         accessToken: accessToken,
