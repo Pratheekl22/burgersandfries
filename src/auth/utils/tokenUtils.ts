@@ -65,6 +65,6 @@ export function createRefreshTokenFromResponse(response: OAuthTokenResponse, inc
         value: response.refresh_token,
         expires: response.refresh_expires_in,
         name: 'refresh',
-        inception,
+        inception: inception,
     };
 }
