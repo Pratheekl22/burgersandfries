@@ -31,6 +31,7 @@ export function hasValidUserToken() {
 export function hasValidAccessToken(userToken: UserTokens): boolean {
     console.log(userToken.accessToken.expires)
     console.log(userToken.accessToken.inception)
+    console.log(Date.now())
     if(userToken && userToken.accessToken) {
         return Date.now() < (userToken.accessToken.inception + userToken.accessToken.expires * 1000)
     } else {

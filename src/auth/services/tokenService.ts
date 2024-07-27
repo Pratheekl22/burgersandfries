@@ -47,6 +47,10 @@ export async function refreshUserTokens() {
  */
 export function getAccessTokenValue(): string | null {
     const userToken = getToken();
+    console.log(userToken)
+    if (userToken) {
+        console.log(hasValidAccessToken(userToken))
+    }
     if(userToken !== null && hasValidAccessToken(userToken)) {
         return userToken.accessToken.value;
     } else if(userToken !== null && !needReauthentication(userToken)) {
