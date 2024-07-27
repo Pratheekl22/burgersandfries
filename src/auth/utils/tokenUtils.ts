@@ -56,7 +56,7 @@ export function createAuthTokenFromResponse(response: OAuthTokenResponse, incept
         value: response.access_token,
         expires: response.expires_in,
         name: 'access',
-        inception,
+        inception: inception,
     };
 }
 
