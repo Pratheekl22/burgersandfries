@@ -75,11 +75,12 @@ function handleAccessTokenResponse(response: OAuthTokenResponse): UserTokens {
 
 function handleRefreshTokenResponse(response: OAuthTokenResponse) {
     const inception = Date.now();
-    const accessToken=  createAuthTokenFromResponse(response, inception);
+    const accessToken= createAuthTokenFromResponse(response, inception);
     console.log(`Created new inception time at: ${inception}`)
     const userTokens = getToken();
     if(userTokens) {
         userTokens.accessToken = accessToken;
+        setToken(userTokens);
     } else {
         throw Error("Error while handling refresh token response")
     }
