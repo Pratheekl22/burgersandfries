@@ -1,3 +1,5 @@
+// @ts-ignore
+import React from 'react';
 import { beginAuthWorkflow } from "../../auth/services/authService.ts";
 import {useNavigate} from "react-router-dom";
 

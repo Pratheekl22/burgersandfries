@@ -1,0 +1,15 @@
+body {
+    display: flex;
+    justify-content: center;
+    align-items: start;
+    width: 100vw; /* Full viewport width */
+    height: 100vh; /* Full viewport height */
+}
+
+.search-container {
+    padding-top: 20vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: calc(100vw * 0.4);
+}

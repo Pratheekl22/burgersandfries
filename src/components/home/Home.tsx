@@ -1,3 +1,5 @@
+// @ts-ignore
+import React from 'react';
 import './Home.css';
 import guardians from '../../assets/guardians.webp'
 import tfs from '../../assets/tfs-heroes.jpg'

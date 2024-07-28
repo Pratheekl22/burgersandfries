@@ -1,0 +1,1 @@
+export const guardianNameRegex = /^[a-zA-Z0-9]+#\d{4}$/;

@@ -47,10 +47,6 @@ export async function refreshUserTokens() {
  */
 export function getAccessTokenValue(): string | null {
     const userToken = getToken();
-    console.log(userToken)
-    if (userToken) {
-        console.log(hasValidAccessToken(userToken))
-    }
     if(userToken !== null && hasValidAccessToken(userToken)) {
         return userToken.accessToken.value;
     } else if(userToken !== null && !needReauthentication(userToken)) {
@@ -76,7 +72,7 @@ function handleAccessTokenResponse(response: OAuthTokenResponse): UserTokens {
 function handleRefreshTokenResponse(response: OAuthTokenResponse) {
     const inception = Date.now();
     const accessToken= createAuthTokenFromResponse(response, inception);
-    console.log(`Created new inception time at: ${inception}`)
+
     const userTokens = getToken();
     if(userTokens) {
         userTokens.accessToken = accessToken;

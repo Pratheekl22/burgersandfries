@@ -1,9 +1,12 @@
+// @ts-ignore
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Home from './components/home/Home';
 import Login from './components/login/Login';
 import OAuthCallback from './components/callback/OAuthCallback';
 import ProtectedRoute from "./components/routes/ProtectedRoute.tsx";
 import Search from './components/search/Search';
+
 
 const App = () => {
     return (
